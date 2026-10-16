@@ -50,18 +50,22 @@ def main():
 
     iniciar_cotacoes()
     current_view = menu()
+    estado = {"view": menu()}   # dicionário, para o Live enxergar o valor atual
 
-    with Live(console=console, screen=True, auto_refresh=False) as live:
+    with Live(
+        get_renderable=lambda: tela(estado["view"]),   # o Live chama isso a cada redesenho
+        console=console,
+        screen=True,
+        refresh_per_second=4,                          # 4 vezes por segundo
+        ) as live:
         while True:
-            live.update(tela(current_view), refresh=True)
-
             tecla = readchar.readkey()
             if tecla == "0":
                 break
             elif tecla == "m":
-                current_view = menu()
-            elif tecla in TELAS:              # qualquer tecla de 1 a 9, não só a "1"
-                current_view = TELAS[tecla]()
+                estado["view"] = menu()
+            elif tecla in TELAS:
+                estado["view"] = TELAS[tecla]()
 
 
 if __name__ == "__main__":

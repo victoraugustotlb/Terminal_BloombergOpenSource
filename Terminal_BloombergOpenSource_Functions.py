@@ -11,7 +11,7 @@ import threading
 from time import sleep
 
 # criado uma vez só aqui; o main importa este mesmo objeto
-console = Console(width=100)
+console = Console()
 
 # nome, fuso horário, abertura, fechamento (no horário local de cada bolsa)
 # nome, fuso horário, abertura, fechamento (no horário local de cada bolsa)
@@ -126,6 +126,7 @@ def tela(conteudo):
             faixa_ativos(),
         ),
         title="[bold yellow]TERMINAL BLOOMBERG OPENSOURCE[/bold yellow]",
+        width=min(100, console.size.width),
         subtitle="[dim]v1.0.0[/dim]",
         border_style="red",
         padding=(1, 2),
