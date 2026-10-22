@@ -4,68 +4,86 @@ from time import sleep
 from rich.live import Live
 from rich.progress import track
 
+# Functions file import
 from Terminal_BloombergOpenSource_Functions import (
-    console, tela,
-    top_10, consultar_acao, historico, watchlist,
-    mercados, grafico, noticias, alertas, ajuda, iniciar_cotacoes,
+    console, renderizar, inicio, executar_comando, iniciar_cotacoes, OPCOES,
 )
 
+ENTER = ("\r", "\n")
+BACKSPACE = ("\x7f", "\x08")
 
-def menu():
-    return (
-        "[1]-Top 10 ações\n"
-        "[2]-Consultar ações\n"
-        "[3]-Histórico de ações\n"
-        "[4]-Watchlist\n"
-        "[5]-Mercados\n"
-        "[6]-Gráfico de ativo\n"
-        "[7]-Notícias\n"
-        "[8]-Alertas de preço\n"
-        "[9]-Ajuda\n"
-        "[0]-Sair"
-    )   # o menu precisa devolver o texto: sem o return, vira None e o painel fica vazio
-
-
-# tecla apertada -> função que devolve o conteúdo daquela tela
-TELAS = {
-    "1": top_10,
-    "2": consultar_acao,
-    "3": historico,
-    "4": watchlist,
-    "5": mercados,
-    "6": grafico,
-    "7": noticias,
-    "8": alertas,
-    "9": ajuda,
+# tudo o que muda na tela fica aqui; o Live lê este dicionário a cada desenho
+estado = {
+    "view": "",          # texto (com formatação do Rich) que aparece no centro
+    "opcao": "",         # número da opção do menu que fica destacada
+    "digitando": False,  # True = a barra de pesquisa está ativa
+    "buffer": "",        # o que foi digitado na barra
 }
 
 
+def processar_tecla(estado, tecla):
+    """Atualiza o estado conforme a tecla apertada. Devolve False quando for para sair."""
+
+    # MODO DIGITAÇÃO: as teclas viram texto da barra de pesquisa
+    if estado["digitando"]:
+        if tecla in ENTER:
+            texto = estado["buffer"]
+            estado["digitando"] = False
+            estado["buffer"] = ""
+            estado["view"] = "[yellow]Buscando...[/yellow]"
+            resultado = executar_comando(texto)
+            if resultado is None:                    # comando SAIR
+                return False
+            estado["view"], estado["opcao"] = resultado
+        elif tecla in BACKSPACE:
+            if estado["buffer"]:
+                estado["buffer"] = estado["buffer"][:-1]
+            else:                                    # barra vazia: Backspace cancela
+                estado["digitando"] = False
+        elif len(tecla) == 1 and (tecla.isalnum() or tecla in ".-^=") and len(estado["buffer"]) < 12:
+            estado["buffer"] += tecla.upper()
+        return True
+
+    # MODO NORMAL: as teclas são atalhos
+    if tecla == "0":
+        return False
+    elif tecla in ("/", "2"):                        # "/" e "2" abrem a barra de pesquisa
+        estado["digitando"] = True
+        estado["buffer"] = ""
+    elif tecla == "m":
+        estado["view"] = inicio()
+        estado["opcao"] = ""
+    elif tecla in OPCOES and OPCOES[tecla][1] is not None:
+        estado["view"] = OPCOES[tecla][1]()          # aqui sim, com parênteses
+        estado["opcao"] = tecla
+    return True
+
+
+# Progress bar time function  
 def process_data():
-    sleep(0.05)
+    sleep(0.02)
 
 
 def main():
-    for _ in track(range(100), description="[white]Loading terminal", console=console):
+    for _ in track(range(100), description="[white]Loading terminal", console=console): # Progress bar logic
         process_data()
 
-    iniciar_cotacoes()
-    current_view = menu()
-    estado = {"view": menu()}   # dicionário, para o Live enxergar o valor atual
+    with console.status("Carregando cotações..."):
+        iniciar_cotacoes()
 
-    with Live(
-        get_renderable=lambda: tela(estado["view"]),   # o Live chama isso a cada redesenho
-        console=console,
-        screen=True,
-        refresh_per_second=4,                          # 4 vezes por segundo
-        ) as live:
-        while True:
-            tecla = readchar.readkey()
-            if tecla == "0":
-                break
-            elif tecla == "m":
-                estado["view"] = menu()
-            elif tecla in TELAS:
-                estado["view"] = TELAS[tecla]()
+    estado["view"] = inicio()
+
+    try:
+        with Live(
+            get_renderable=lambda: renderizar(estado),   # o Live chama isso a cada desenho
+            console=console,
+            screen=True,
+            refresh_per_second=4,
+        ):
+            while processar_tecla(estado, readchar.readkey()):
+                pass
+    except KeyboardInterrupt:
+        pass    # Ctrl+C sai sem despejar erro no Terminal
 
 
 if __name__ == "__main__":
