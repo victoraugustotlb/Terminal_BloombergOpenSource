@@ -10,7 +10,7 @@
 ![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
  
 <br>
-<img src="assets/demo.gif" alt="Demo" width="800">
+<img src="Assets/Kapture 2026-10-22 at 11.28.48.gif" alt="Demo" width="800">
 </div>
 <br>
 ## ✨ Features
