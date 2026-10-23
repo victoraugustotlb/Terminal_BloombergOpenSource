@@ -5,7 +5,6 @@
  
 ![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?style=for-the-badge&logo=python&logoColor=white)
 ![Rich](https://img.shields.io/badge/UI-Rich-8A2BE2?style=for-the-badge)
-![Platform](https://img.shields.io/badge/Platform-macOS%20%7C%20Linux-lightgrey?style=for-the-badge&logo=apple&logoColor=white)
 ![Status](https://img.shields.io/badge/Status-In%20Development-yellow?style=for-the-badge)
 ![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
  
